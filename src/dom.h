@@ -14,7 +14,9 @@ class Node {
 public:
     Node() = default;
     Node(ElementType type) : type_(type) {}
+    virtual std::string GetElementData() = 0;
     std::vector<Node*> childern;
+private:
     ElementType type_;
 };
 
@@ -22,6 +24,9 @@ class TextNode : public Node {
 public:
     TextNode() = default;
     TextNode(std::string text) : text_(text), Node(ElementType::TEXTNODE) {}
+    std::string GetElementData() override {
+        return text_;
+    }
     std::string GetText() {
         return text_;
     }
@@ -35,6 +40,9 @@ public:
     Element(std::string tag_name,
             std::unordered_map<std::string, std::string> AttrMap)
             : tag_name_(tag_name), AttrMap_(AttrMap), Node(ElementType::ELEMENT) {}
+    std::string GetElementData() override {
+        return tag_name_;
+    }
     std::string GetTagName() {
         return tag_name_;
     }
@@ -43,7 +51,7 @@ public:
             std::cout << Attr.first << " " << Attr.second << "\n";
         }
     }
-private: 
+private:
     std::string tag_name_;
     std::unordered_map<std::string, std::string> AttrMap_;
 };

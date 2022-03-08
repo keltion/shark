@@ -5,18 +5,23 @@
 #include <iostream>
 #include <unordered_map>
 
+enum class ElementType{
+    ELEMENT,
+    TEXTNODE
+};
+
 class Node {
 public:
     Node() = default;
-    Node(std::string type) : Type(type) {}
+    Node(ElementType type) : type_(type) {}
     std::vector<Node*> childern;
-    std::string Type;
+    ElementType type_;
 };
 
 class TextNode : public Node {
 public:
     TextNode() = default;
-    TextNode(std::string text) : text_(text), Node("TextNode") {}
+    TextNode(std::string text) : text_(text), Node(ElementType::TEXTNODE) {}
     std::string GetText() {
         return text_;
     }
@@ -27,8 +32,9 @@ private:
 class Element : public Node {
 public:
     Element() = default;
-    Element(std::string tag_name, 
-            std::unordered_map<std::string, std::string> AttrMap) : tag_name_(tag_name), AttrMap_(AttrMap), Node("Element") {}
+    Element(std::string tag_name,
+            std::unordered_map<std::string, std::string> AttrMap)
+            : tag_name_(tag_name), AttrMap_(AttrMap), Node(ElementType::ELEMENT) {}
     std::string GetTagName() {
         return tag_name_;
     }

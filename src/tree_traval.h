@@ -6,7 +6,7 @@
 #include "dom.h"
 
 void inorder(Node* node, std::string deep) {
-    if(node->Type == "TextNode") {
+    if(node->type_ == ElementType::TEXTNODE) {
         TextNode* TNode =static_cast<TextNode*>(node);
         std::cout << deep + TNode->GetText() << std::endl;
         deep += "  ";

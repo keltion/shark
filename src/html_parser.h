@@ -8,9 +8,9 @@
 #include "dom.h"
 #include "tree_traval.h"
 
-class Parser {
+class HTMLParser {
 public:
-    Parser(std::string html) : input_(html), pos(0) {} 
+    HTMLParser(std::string html) : input_(html), pos(0) {} 
     Node* parse_node();
     std::vector<Node*> parse_nodes();
     char next_char();
@@ -22,7 +22,7 @@ private:
     std::string input_;
 };
 
-Node* Parser::parse_node() {
+Node* HTMLParser::parse_node() {
     Node* node = nullptr;
     if('<' == next_char()) {
         node = parse_element();
@@ -33,22 +33,22 @@ Node* Parser::parse_node() {
     return node;
 }
 
-std::vector<Node*> Parser::parse_nodes() {
+std::vector<Node*> HTMLParser::parse_nodes() {
     std::vector<Node*> chlidren;
     while(input_[pos+1] != '/') {
         chlidren.emplace_back(parse_node());
     }
     return chlidren;
 }
-char Parser::next_char() {
+char HTMLParser::next_char() {
     return input_[pos];
 }
 
-char Parser::consume_char() {
+char HTMLParser::consume_char() {
     return input_[pos++];
 }
 
-TextNode* Parser::parse_text() {
+TextNode* HTMLParser::parse_text() {
     std::string text;
     while(next_char() != '<')
         text += consume_char();
@@ -56,7 +56,7 @@ TextNode* Parser::parse_text() {
     return text_node;
 }
 
-Element* Parser::parse_element() {
+Element* HTMLParser::parse_element() {
     std::string tag_name;
     std::string confirm_tag_name;
     std::unordered_map<std::string, std::string> attr_map;

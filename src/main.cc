@@ -1,7 +1,7 @@
 #include <fstream>
 
 #include "dom.h"
-#include "parser.h"
+#include "html_parser.h"
 #include "tree_traval.h"
 
 int main() {
@@ -10,8 +10,8 @@ int main() {
     std::string html;
     getline(fin, html);
 
-    Parser parser(html);
-    Node* dom = parser.parse_node();
+    HTMLParser html_parser(html);
+    Node* dom = html_parser.parse_node();
 
     inorder(dom, "");
 }

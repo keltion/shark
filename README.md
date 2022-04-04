@@ -19,3 +19,18 @@
 
 2. Element의 생략을 허용하지 않습니다.
 3. 닫힌 태그 생략을 허용하지 않습니다.
+---
+
+## 현재까지 구현된 부분
+다음과 같은 HTML을 각 태그별로 토큰화하는 작업까지 구현하였습니다. 아직 character는 토큰화하지 못합니다.
+```html
+<html><head></head><body><div id="div1"></div><div id="div2"></div></body></html>
+``` 
+## 구현 결과
+![image](https://user-images.githubusercontent.com/76467273/161520929-c8e57b5c-fbf1-4391-b9fc-eada735ce4e1.png)
+
+## 계획
+1. character 토큰화 구현
+2. 각 토큰을 토큰의 Type에 따라 Element 또는 Text 객체로 생성하는 로직구현
+3. 2에서 만들어진 객체를 바탕으로 DOM Tree를 생성하는 HTMLTreeBuilder 구현
+4. 간단한 버전의 css parser 구현

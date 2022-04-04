@@ -12,6 +12,9 @@ bool HTMLTokenizer::NextToken(HTMLToken& token) {
             goto kTagOpenState;
         } else if (IsASCIIAlpha(cc)) { // Text Token
             token.AppendToCharater(cc);
+        } else if (cc == '\0') {
+            token = HTMLToken::TokenType::kEndOfFile;
+            return false;
         } else {
             exit(0); // error
         }

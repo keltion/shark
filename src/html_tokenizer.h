@@ -6,7 +6,7 @@
 class HTMLTokenizer {
 public:
     HTMLTokenizer() = delete;
-    HTMLTokenizer(std::string& input)
+    HTMLTokenizer(const std::string& input)
         : state_(State::kDataState), input_(input), pos(0) {}
     enum class State{
         kDataState,
@@ -29,7 +29,7 @@ public:
         cc = input_[++pos];
     }
 private:
-    std::string& input_;
+    const std::string& input_;
     std::size_t pos;
     State state_;
 };

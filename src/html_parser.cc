@@ -6,7 +6,7 @@
 
 bool HTMLParser::PumpTokenizer() {
     while(1) {
-        if(!tokenizer_->NextToken(*token_)) {
+        if (!tokenizer_->NextToken(*token_)) {
             break;
         }
         // TODO : Implement ConstructTreeFromHTMLToken();
@@ -24,7 +24,7 @@ bool HTMLParser::PumpTokenizer() {
         }
         std::cout << std::endl;
 
-        token_.release();
+        token_.reset();
         token_ = std::make_unique<HTMLToken>();
     }
     return true;

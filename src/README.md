@@ -1,5 +1,5 @@
 # dom.h
-Dom을 위한 데이터 구조 정의
+Defining data structures for DOM
 
 ## Node
-Dom Tree를 구성하는 Node
+Node composing the DOM Tree

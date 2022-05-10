@@ -10,10 +10,12 @@ bool HTMLTokenizer::NextToken(HTMLToken& token) {
             state_ = State::kTagOpenState;
             ConsumeChar(cc);
             goto kTagOpenState;
-        } else if (IsASCIIAlpha(cc)) { // Text Token
+        } else if (IsASCIIAlpha(cc) || cc == ' ') { // Text Token
             token.AppendToCharater(cc);
+            ConsumeChar(cc);
+            token.SetType(HTMLToken::TokenType::kCharacter);
         } else if (cc == '\0') {
-            token = HTMLToken::TokenType::kEndOfFile;
+            token.SetType(HTMLToken::TokenType::kEndOfFile);
             return false;
         } else {
             exit(0); // error
@@ -28,7 +30,7 @@ bool HTMLTokenizer::NextToken(HTMLToken& token) {
             goto kEndTagOpenState;
         } else if (IsASCIIAlpha(cc)) {
             state_ = State::kTagNameState;
-            token = HTMLToken::TokenType::kStartTag;
+            token.SetType(HTMLToken::TokenType::kStartTag);
             goto kTagNameState;
         } else {
             exit(0); //error
@@ -58,7 +60,7 @@ bool HTMLTokenizer::NextToken(HTMLToken& token) {
     kEndTagOpenState :
         if (IsASCIIAlpha(cc)) {
             state_ = State::kTagNameState;
-            token = HTMLToken::TokenType::kEndTag;
+            token.SetType(HTMLToken::TokenType::kEndTag);
             goto kTagNameState;
         } else {
             exit(0); //error

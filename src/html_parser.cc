@@ -10,9 +10,8 @@ bool HTMLParser::PumpTokenizer() {
             break;
         }
         // TODO : Implement ConstructTreeFromHTMLToken();
-
         // TEST 
-        std::array<std::string, 3> matching {"", "Start Tag", "E n d Tag"};
+        std::array<std::string, 4> matching {"", "Start Tag", "E n d Tag", "Character"};
         std::cout << "["<< matching[token_->GetType()] << "] "
         << token_->TagName() << " ";
         

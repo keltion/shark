@@ -15,8 +15,9 @@ public:
     };
 
     HTMLToken() : type_(kUinitialized) {}
-    HTMLToken(TokenType T) : type_(T) {}
+    explicit HTMLToken(TokenType T) : type_(T) {}
     TokenType GetType() { return type_; }
+    void SetType(TokenType token_type) { type_ = token_type; }
     std::string TagName() { return data_; }
     void AppendToCharater(char c) { data_ += c; }
     void AppendToAttributeName(char c) { attribute_name_ += c; }

@@ -16,7 +16,7 @@ public:
 
     HTMLToken() : type_(kUinitialized) {}
     explicit HTMLToken(TokenType T) : type_(T) {}
-    TokenType GetType() { return type_; }
+    TokenType type() { return type_; }
     void SetType(TokenType token_type) { type_ = token_type; }
     std::string TagName() { return data_; }
     void AppendToCharater(char c) { data_ += c; }
@@ -25,12 +25,15 @@ public:
     void InputAttributeData() {
         attributes_.emplace_back(std::make_pair(attribute_name_,
                                 attribute_value_));
+        attribute_value_ = "";
+
     }
     const std::vector<std::pair<std::string, std::string>>& Attributes() const {
         return attributes_;
     }
 
 private:
+
     TokenType type_;
     std::string data_;
     std::string attribute_name_;

@@ -3,19 +3,17 @@
 #include <memory>
 #include <string>
 
+#include "dom.h"
 #include "html_token.h"
 #include "html_tokenizer.h"
 
-class HTMLParser {
+class HTMLParser 
+{
 public:
-    HTMLParser(const std::string& html)
-        : pos(0),token_(std::make_unique<HTMLToken>()),
-        tokenizer_(std::make_unique<HTMLTokenizer>(html)) {}
+    HTMLParser(std::string&& html)
+        : pos_(0), tokenizer_(HTMLTokenizer(std::move(html))) {}
     bool PumpTokenizer();
-    HTMLTokenizer* Tokenizer() { return tokenizer_.get(); }
-
 private:
-    std::size_t pos;
-    std::unique_ptr<HTMLToken> token_;
-    std::unique_ptr<HTMLTokenizer> tokenizer_;
+    std::size_t pos_;
+    HTMLTokenizer tokenizer_;
 };

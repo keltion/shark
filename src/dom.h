@@ -1,29 +1,40 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include "utils.h"
+
 #include <iostream>
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 enum class ElementType{
-    ELEMENT,
-    TEXTNODE
+    kElement,
+    kTextNode,
 };
 
-class Node {
+class DomNode {
 public:
-    Node() = default;
-    Node(ElementType type) : type_(type) {}
+    DomNode() = default;
+    DomNode(ElementType type) : type_(type), parent_{ nullptr } {}
+    //virtual ~DomNode() { delete parent_; }; TODO : apply smart pointer
     virtual std::string GetElementData() = 0;
-    std::vector<Node*> childern;
+    void addChild(std::unique_ptr<DomNode> node);
+    void setParent(DomNode* node);
+    DomNode * parent() const;
+    const std::vector<std::unique_ptr<DomNode>>& childern() const;
+    ElementType type() const;
+
 private:
+    std::vector<std::unique_ptr<DomNode>> childern_;
+    DomNode* parent_;
     ElementType type_;
 };
 
-class TextNode : public Node {
+class TextNode : public DomNode {
 public:
     TextNode() = default;
-    TextNode(std::string text) : text_(text), Node(ElementType::TEXTNODE) {}
+    TextNode(std::string text) : text_(text), DomNode(ElementType::kTextNode) {}
     std::string GetElementData() override {
         return text_;
     }
@@ -34,24 +45,36 @@ private:
     std::string text_;
 };
 
-class Element : public Node {
+class Element : public DomNode {
 public:
     Element() = default;
-    Element(std::string tag_name,
-            std::unordered_map<std::string, std::string> AttrMap)
-            : tag_name_(tag_name), AttrMap_(AttrMap), Node(ElementType::ELEMENT) {}
+    Element(std::string tag_name) : tag_name_(tag_name), DomNode(ElementType::kElement) {}// temp
+
+    //Element(std::string tag_name,
+    //        std::unordered_map<std::string, std::string> AttrMap)
+    //        : tag_name_(tag_name), AttrMap_(AttrMap), DomNode(ElementType::kElement) {}
     std::string GetElementData() override {
         return tag_name_;
     }
-    std::string GetTagName() {
+    const std::string& GetTagName() const {
         return tag_name_;
     }
-    void PrintAttrMap() {
+    void PrintAttrMap() const {
         for(auto Attr : AttrMap_) {
             std::cout << Attr.first << " " << Attr.second << "\n";
         }
     }
+    const std::string& Id() const;
+    const std::unordered_set<std::string> classes() const;
+    void setAttributeMap(std::unordered_map<std::string, std::string> &&AttributeMap);
 private:
     std::string tag_name_;
     std::unordered_map<std::string, std::string> AttrMap_;
+};
+
+
+class DomTree
+{
+public:
+private:
 };

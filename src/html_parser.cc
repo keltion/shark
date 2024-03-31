@@ -4,6 +4,7 @@
 
 #include "dom.h"
 #include "html_parser.h"
+#include "utils.h"
 
 bool HTMLParser::PumpTokenizer() {
     while (true) {
@@ -11,9 +12,13 @@ bool HTMLParser::PumpTokenizer() {
         if (!token) {
             break;
         }
+
+        treeBuilder_.ConstructTreeFromHTMLToken(std::move(token));
     }
     return true;
 }
 
-
+DomNode* HTMLParser::DomTree() const {
+    return treeBuilder_.domTree();
+}
 

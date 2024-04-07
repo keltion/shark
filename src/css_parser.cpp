@@ -1,12 +1,17 @@
 #include <algorithm>
+#include <format>
 #include <iostream>
 #include <tuple>
 
 #include "css_parser.h"
+#include "utils.h"
 
+// TODO: Integrate with CssProperties & CssPropertyValues
 std::unordered_map<std::string, std::pair<kProperty, kValueType>> propertyPool{
 		{"font-weight", std::make_pair(kProperty::FontWeight,kValueType::Length)},
 		{"color",  std::make_pair(kProperty::Color,kValueType::Color)},
+		{"display",  std::make_pair(kProperty::Display, kValueType::Keyword)},
+
 };
 
 std::unordered_map<std::string, Color> colorToRGB{
@@ -20,7 +25,6 @@ static void removeWhitespace(std::string& str) {
 		str.end()
 	);
 }
-
 
 void CSSParser::parseCss()
 {
@@ -53,57 +57,47 @@ void CSSParser::consumeCharacter()
 	++position_;
 }
 
-
 SimpleSelecter CSSParser::parseSelectors()
 {
 	Rule rule;
 	SimpleSelecter selector;
-	while (nextCharacter() != '{')
+	while (nextCharacter() != Symbols::kLeftSquareBracket)
 	{
 		switch (nextCharacter())
 		{
-		case '.':
+		case Symbols::kDot:
 		{
 			consumeCharacter();
 			std::string className;
-			while (nextCharacter() != '{' && nextCharacter() != '#' && nextCharacter() != '.')
+			while (nextCharacter() != Symbols::kLeftSquareBracket && nextCharacter() != Symbols::kSharp && nextCharacter() != Symbols::kDot)
 			{
 				className += nextCharacter();
 				consumeCharacter();
 			}
-#ifdef TEST
-			std::cout << "className= " << className << std::endl;
-#endif // TEST
 			selector.pushClass(className);
 		}
 		break;
-		case '#':
+		case Symbols::kSharp:
 		{
 			consumeCharacter();
 			std::string idName;
-			while (nextCharacter() != '{' && nextCharacter() != '.')
+			while (nextCharacter() != Symbols::kLeftSquareBracket && nextCharacter() != Symbols::kDot)
 			{
 				idName += nextCharacter();
 				consumeCharacter();
 			}
 			
-#ifdef TEST
-			std::cout << "id= " << idName << std::endl;
-#endif // TEST
 			selector.setId(idName);
 		}
 		break;
 		default:
 		{
 			std::string tagName;
-			while (nextCharacter() != '{' && nextCharacter() != '.' && nextCharacter() != '#')
+			while (nextCharacter() != Symbols::kLeftSquareBracket && nextCharacter() != Symbols::kDot && nextCharacter() != Symbols::kSharp)
 			{
 				tagName += nextCharacter();
 				consumeCharacter();
 			}
-#ifdef TEST
-			std::cout << "tagName= " << tagName << std::endl;
-#endif // TEST
 			selector.setTagName(tagName);
 		}
 		}
@@ -114,23 +108,22 @@ SimpleSelecter CSSParser::parseSelectors()
 
 Value CSSParser::parseValue(const std::string& property)
 {
-	Value value;
-
 	if (!propertyPool.contains(property))
 	{
-		// ASSERT(false);
+		std::cout << std::format("! Error Invalid Property[{}].\n", property);
+		exit(0);
 	}
-
-	const auto& [propertyType, valueType] = propertyPool[property];
+	const auto& [propertyType, valueType] = propertyPool.at(property);
 
 	std::string valueString;
 
-	while (nextCharacter() != ';')
+	while (nextCharacter() != Symbols::kSemicolon)
 	{
 		valueString += nextCharacter();
 		consumeCharacter();
 	}
 
+	Value value;
 	switch (valueType)
 	{
 	case kValueType::Keyword:
@@ -155,10 +148,16 @@ Value CSSParser::parseValue(const std::string& property)
 std::string CSSParser::parseProperty()
 {
 	std::string propertyName;
-	while (nextCharacter() != ':')
+	while (nextCharacter() != Symbols::kColon)
 	{
 		propertyName += nextCharacter();
 		consumeCharacter();
+	}
+
+	if (!propertyPool.contains(propertyName))
+	{
+		std::cout << std::format("! Error Invalid Property[{}].\n", propertyName);
+		exit(0);
 	}
 	return propertyName;
 }
@@ -172,23 +171,18 @@ void CSSParser::pumpRule()
 		switch (state_)
 		{
 		case State::kSelectorNameState: {
-			if (nextCharacter() == '{')
+			if (nextCharacter() == Symbols::kLeftSquareBracket)
 			{
 				state_ = State::kDeclarationProperty;
 				consumeCharacter();
 				continue;
 			}
-#ifdef TEST
-			SimpleSelecter selector = parseSelectors();
-			rule.setSelector(std::move(selector));
-#else // TEST
-			rule.setSelector(std::move(parseSelectors()));
 
-#endif // TEST
+			rule.setSelector(std::move(parseSelectors()));
 			break;
 		}
 		case State::kDeclarationProperty: {
-			if (nextCharacter() == '}')
+			if (nextCharacter() == Symbols::kRightSquareBracket)
 			{
 				stylesheet_.emplaceRule(rule);
 				consumeCharacter();
@@ -196,37 +190,31 @@ void CSSParser::pumpRule()
 
 				return;
 			}
-			if (nextCharacter() == ':')
+			if (nextCharacter() == Symbols::kColon)
 			{
 				state_ = State::kDeclarationValue;
 				consumeCharacter();
 				continue;
 			}
-#ifdef TEST
-			std::string property = parseProperty();
-			declaration.property_ = std::move(property);
-#else // TEST
+
 			declaration.property_ = std::move(parseProperty());
-#endif // TEST
 			break;
 		}
 		case State::kDeclarationValue: {
-			if (nextCharacter() == ';')
+			if (nextCharacter() == Symbols::kSemicolon)
 			{
 				rule.pushDelaration(declaration);
 				state_ = State::kDeclarationProperty;
 				consumeCharacter();
 				continue;
 			}
-#ifdef TEST
-			Value value = parseValue(declaration.property_);
-			declaration.value_ = std::move(value);
-#else // TEST
+
 			declaration.value_ = std::move(parseValue(declaration.property_));
-#endif // TEST
 			break;
 		}
-									 //default:
+		default:
+			std::cout << std::format("! Error Invalid CCSParser State[{}].\n", static_cast<int32_t>(state_));
+			exit(0);
 		}
 	}
 }

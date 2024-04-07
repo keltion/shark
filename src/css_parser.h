@@ -32,19 +32,25 @@ struct Color
 
 };
 
+
+
 using Value = std::variant<Keyword, Length, Color>;
+
+
 
 enum class kValueType
 {
 	Keyword,
 	Length,
 	Color,
+	Display,
 };
 
 enum class kProperty
 {
 	FontWeight,
 	Color,
+	Display,
 };
 
 
@@ -57,7 +63,6 @@ struct Declaration
 class SimpleSelecter
 {
 public:
-	// sum을 반환하면 안되나?
 	std::tuple<int32_t, int32_t, int32_t> specificity() const
 	{
 		const int32_t idCount = id_ ? 1 : 0;

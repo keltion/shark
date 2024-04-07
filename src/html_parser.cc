@@ -18,7 +18,7 @@ bool HTMLParser::PumpTokenizer() {
     return true;
 }
 
-DomNode* HTMLParser::DomTree() const {
+const DomNode& HTMLParser::DomTree() const {
     return treeBuilder_.domTree();
 }
 

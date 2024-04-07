@@ -22,10 +22,11 @@ public:
     void SetAttribute(Element& element, const std::vector<std::pair<std::string, std::string>>& attributes);
     void HandleNoneState(std::unique_ptr<HTMLToken> token);
 
-    void HandleTagOpen(std::unique_ptr<HTMLToken> token);
+    void HandleTagOpenState(std::unique_ptr<HTMLToken> token);
+    void HandleTagCloseState(std::unique_ptr<HTMLToken> token);
 
     void ConstructTreeFromHTMLToken(std::unique_ptr<HTMLToken> token);
-    Element *domTree() const;
+    const Element& domTree() const;
 
 private:
     State state_;

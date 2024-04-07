@@ -27,7 +27,7 @@ void DomTreeBuilder::HandleNoneState(std::unique_ptr<HTMLToken> token) {
 	state_ = State::kTagOpen;
 }
 
-void DomTreeBuilder::HandleTagOpen(std::unique_ptr<HTMLToken> token) {
+void DomTreeBuilder::HandleTagOpenState(std::unique_ptr<HTMLToken> token) {
 	std::unique_ptr<DomNode> currentNode = nullptr;
 	
 	switch (token->type()) {
@@ -56,50 +56,46 @@ void DomTreeBuilder::HandleTagOpen(std::unique_ptr<HTMLToken> token) {
 	}
 }
 
+void DomTreeBuilder::HandleTagCloseState(std::unique_ptr<HTMLToken> token) {
+	std::unique_ptr<DomNode> currentNode = nullptr;
+
+	switch (token->type()) {
+	case HTMLToken::TokenType::kStartTag: {
+		currentNode = std::make_unique<Element>(token->TagName());
+		SetAttribute(*static_cast<Element*>(currentNode.get()), token->Attributes());
+		currentNode->setParent(header_);
+		DomNode* newHeader = currentNode.get();
+		header_->addChild(std::move(currentNode));
+		header_ = newHeader;
+		state_ = State::kTagOpen;
+	}
+	break;
+
+	case HTMLToken::TokenType::kCharacter: {
+		currentNode = std::make_unique<TextNode>(token->TagName());
+		currentNode->setParent(header_);
+		header_->addChild(std::move(currentNode));
+		state_ = State::kTagOpen;
+	}
+	break;
+	}
+}
+
 void DomTreeBuilder::ConstructTreeFromHTMLToken(std::unique_ptr<HTMLToken> token) {
 	switch (state_) {
 	case State::kNone:
 		HandleNoneState(std::move(token));
 		break;
 	case State::kTagOpen:
-		HandleTagOpen(std::move(token));
+		HandleTagOpenState(std::move(token));
 		break;
-	//case State::kTagClose:
-	//	if (token->type() == HTMLToken::TokenType::kStartTag)
-	//	{
-	//		currentNode = new Element(token->TagName());
-	//		if (!token->Attributes().empty())
-	//		{
-	//			std::unordered_map<std::string, std::string> attributeMap;
-	//			for (const auto& attribute : token->Attributes())
-	//			{
-	//				attributeMap[attribute.first] = attributeMap[attribute.second];
-	//			}
-	//			static_cast<Element*>(currentNode)->setAttributeMap(std::move(attributeMap));
-	//		}
-	//		currentNode->setParent(header_);
-	//		header_->addChild(currentNode);
-	//		header_ = currentNode;
-	//		state_ = State::kTagOpen;
-	//		
-	//		break;
-	//	}
-	//	if (token->type() == HTMLToken::TokenType::kCharacter)
-	//	{
-	//		currentNode = new TextNode(token->TagName());
-	//		currentNode->setParent(header_);
-	//		header_->addChild(currentNode);
-	//		header_ = currentNode;
-	//		state_ = State::kTagOpen;
-
-	//		break;
-	//	}
-	//	break;
+	case State::kTagClose:
+		HandleTagCloseState(std::move(token));
+		break;
 	}
 }
 
-
-Element* DomTreeBuilder::domTree() const
+const Element &DomTreeBuilder::domTree() const
 { 
-	return domTree_.get();
+	return *domTree_;
 }

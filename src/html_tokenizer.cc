@@ -4,15 +4,7 @@
 
 #include "html_tokenizer.h"
 #include "css_parser.h"
-constexpr char kLeftAngleBracket = '<';
-constexpr char kRightAngleBracket = '>';
-constexpr char kSpace = ' ';
-constexpr char kSlash = '/';
-constexpr char kQuote = '"';
-constexpr char kEqual = '=';
-constexpr char kEndOfFile = '\0';
-
-
+#include "utils.h"
 
 std::unique_ptr<HTMLToken> HTMLTokenizer::NextToken() {
     std::unique_ptr<HTMLToken> token = std::make_unique<HTMLToken>();
@@ -59,7 +51,7 @@ std::unique_ptr<HTMLToken> HTMLTokenizer::NextToken() {
             tokenCompleted = HandleAfterAttributeValueQuotedState(*token);
             break;
         default:
-            std::cout << std::format("! Error Invalid State[{}].", static_cast<int32_t>(state_));
+            std::cout << std::format("! Error HTMLTokenizer Invalid State[{}].\n", static_cast<int32_t>(state_));
             exit(0);
             break;
         }
@@ -70,17 +62,17 @@ std::unique_ptr<HTMLToken> HTMLTokenizer::NextToken() {
 
 bool HTMLTokenizer::HandleDataState(HTMLToken &token) {
     switch (CurrentChar()) {
-    case kLeftAngleBracket:
+    case Symbols::kLeftAngleBracket:
         state_ = State::kTagOpenState;
         ConsumeChar();
         break;
     default:
-        if (IsASCIIAlpha(CurrentChar()) || CurrentChar() == kSpace) {
+        if (IsASCIIAlpha(CurrentChar()) || CurrentChar() == Symbols::kSpace) {
             token.SetType(HTMLToken::TokenType::kCharacter);
             state_ = State::kCharacterState;
         }
         else {
-            std::cout << std::format("! Error [HandleDataState] Invalid Character[{}].", CurrentChar());
+            std::cout << std::format("! Error [HandleDataState] Invalid Character[{}].\n", CurrentChar());
             state_ = State::kInvalidState;
         }
     }
@@ -88,7 +80,7 @@ bool HTMLTokenizer::HandleDataState(HTMLToken &token) {
 }
 
 bool HTMLTokenizer::HandleCharacterState(HTMLToken& token) {
-    if (CurrentChar() == kLeftAngleBracket) {
+    if (CurrentChar() == Symbols::kLeftAngleBracket) {
         state_ = State::kDataState;
         return true;
     }
@@ -101,7 +93,7 @@ bool HTMLTokenizer::HandleCharacterState(HTMLToken& token) {
 
 bool HTMLTokenizer::HandleTagOpenState(HTMLToken& token) {
     switch (CurrentChar()) {
-    case kSlash:
+    case Symbols::kSlash:
         ConsumeChar();
         state_ = State::kEndTagOpenState;
         break;
@@ -112,7 +104,7 @@ bool HTMLTokenizer::HandleTagOpenState(HTMLToken& token) {
             token.SetType(HTMLToken::TokenType::kStartTag);
         }
         else {
-            std::cout << std::format("! Error [HandleTagOpenState] Invalid Character[{}].", CurrentChar());
+            std::cout << std::format("! Error [HandleTagOpenState] Invalid Character[{}].\n", CurrentChar());
             state_ = State::kInvalidState;
         }
     }
@@ -122,12 +114,12 @@ bool HTMLTokenizer::HandleTagOpenState(HTMLToken& token) {
 bool HTMLTokenizer::HandleTagNameState(HTMLToken& token) {
 
     switch (CurrentChar()) {
-    case kRightAngleBracket :
+    case Symbols::kRightAngleBracket :
         state_ = State::kDataState;
         ConsumeChar();
         return true;
         break;
-    case kSpace:
+    case Symbols::kSpace:
          state_ = State::kBeforeAttributeNameState;
          ConsumeChar();
         break;
@@ -137,7 +129,7 @@ bool HTMLTokenizer::HandleTagNameState(HTMLToken& token) {
             ConsumeChar();
         }
         else {
-            std::cout << std::format("! Error [HandleTagNameState] Invalid Character[{}].", CurrentChar());
+            std::cout << std::format("! Error [HandleTagNameState] Invalid Character[{}].\n", CurrentChar());
             state_ = State::kInvalidState;
         }
     }
@@ -149,7 +141,7 @@ bool HTMLTokenizer::HandleEndTagOpenState(HTMLToken& token) {
         state_ = State::kTagNameState;
         token.SetType(HTMLToken::TokenType::kEndTag);
     } else {
-        std::cout << std::format("! Error [HandleEndTagOpenState] Invalid Character[{}].", CurrentChar());
+        std::cout << std::format("! Error [HandleEndTagOpenState] Invalid Character[{}].\n", CurrentChar());
         state_ = State::kInvalidState;
     }
     return false;
@@ -160,7 +152,7 @@ bool HTMLTokenizer::HandleBeforeAttributeNameState(HTMLToken &token) {
         state_ = State::kAttributeNameState;
     }
     else {
-        std::cout << std::format("! Error [HandleBeforeAttributeNameState] Invalid Character[{}].", CurrentChar());
+        std::cout << std::format("! Error [HandleBeforeAttributeNameState] Invalid Character[{}].\n", CurrentChar());
         state_ = State::kInvalidState;
     }
     return false;
@@ -169,11 +161,11 @@ bool HTMLTokenizer::HandleBeforeAttributeNameState(HTMLToken &token) {
 bool HTMLTokenizer::HandleAttributeNameState(HTMLToken& token) {
 
     switch (CurrentChar()) {
-    case kEqual:
+    case Symbols::kEqual:
         state_ = State::kBeforeAttributeValueState;
         ConsumeChar();
         break;
-    case kSpace:
+    case Symbols::kSpace:
         state_ = State::kAfterAttributeNameState;
         ConsumeChar();
         break;
@@ -183,7 +175,7 @@ bool HTMLTokenizer::HandleAttributeNameState(HTMLToken& token) {
             ConsumeChar();
         }
         else {
-            std::cout << std::format("! Error [HandleTagNameState] Invalid Character[{}].", CurrentChar());
+            std::cout << std::format("! Error [HandleTagNameState] Invalid Character[{}].\n", CurrentChar());
             state_ = State::kInvalidState;
         }
     }
@@ -191,12 +183,12 @@ bool HTMLTokenizer::HandleAttributeNameState(HTMLToken& token) {
 }
 
 bool HTMLTokenizer::HandleAfterAttributeNameState(HTMLToken& token) {
-    if (GetNextChar() == kRightAngleBracket) {
+    if (GetNextChar() == Symbols::kRightAngleBracket) {
         state_ = State::kDataState;
         ConsumeChar();
         return true;
     } else {
-        std::cout << std::format("! Error [HandleAfterAttributeNameState] Invalid Character[{}].", CurrentChar());
+        std::cout << std::format("! Error [HandleAfterAttributeNameState] Invalid Character[{}].\n", CurrentChar());
         state_ = State::kInvalidState;
     }
 
@@ -204,11 +196,11 @@ bool HTMLTokenizer::HandleAfterAttributeNameState(HTMLToken& token) {
 }
 
 bool HTMLTokenizer::HandleBeforeAttributeValueState(HTMLToken& token) {
-    if (GetNextChar() == kQuote) {
+    if (GetNextChar() == Symbols::kQuote) {
         state_ = State::kAttributeValuedState;
         ConsumeChar();
     } else {
-        std::cout << std::format("! Error [HandleBeforeAttributeValueState] Invalid Character[{}].", CurrentChar());
+        std::cout << std::format("! Error [HandleBeforeAttributeValueState] Invalid Character[{}].\n", CurrentChar());
         state_ = State::kInvalidState;
     }
 
@@ -217,16 +209,16 @@ bool HTMLTokenizer::HandleBeforeAttributeValueState(HTMLToken& token) {
 
 bool HTMLTokenizer::HandleAttributeValuedState(HTMLToken& token) {
     switch (CurrentChar()) {
-    case kQuote:
+    case Symbols::kQuote:
         state_ = State::kAfterAttributeValueQuotedState;
         ConsumeChar();
         break;
     default:
-        if (IsASCIIAlpha(CurrentChar()) || IsASCIIDigit(CurrentChar()) || CurrentChar() == kSpace) {
+        if (IsASCIIAlpha(CurrentChar()) || IsASCIIDigit(CurrentChar()) || CurrentChar() == Symbols::kSpace) {
             token.AppendToAttributeValue(CurrentChar());
             ConsumeChar();
         } else {
-            std::cout << std::format("! Error [HandleAttributeValuedState] Invalid Character[{}].", CurrentChar());
+            std::cout << std::format("! Error [HandleAttributeValuedState] Invalid Character[{}].\n", CurrentChar());
             state_ = State::kInvalidState;
         }
     }
@@ -234,14 +226,14 @@ bool HTMLTokenizer::HandleAttributeValuedState(HTMLToken& token) {
 }
 
 bool HTMLTokenizer::HandleAfterAttributeValueQuotedState(HTMLToken& token) {
-    if (CurrentChar() == kRightAngleBracket) {
+    if (CurrentChar() == Symbols::kRightAngleBracket) {
         state_ = State::kDataState;
         ConsumeChar();
         token.InputAttributeData();
         return true;
     }
     else {
-        std::cout << std::format("! Error [HandleAfterAttributeValueQuotedState] Invalid Character[{}].", CurrentChar());
+        std::cout << std::format("! Error [HandleAfterAttributeValueQuotedState] Invalid Character[{}].\n", CurrentChar());
         state_ = State::kInvalidState;
     }
     return false;

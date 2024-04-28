@@ -20,7 +20,9 @@ enum class Unit
 
 struct Length 
 {
+	Length(float inputValue, Unit inputUnit, bool autoValue = false) : value(inputValue, inputUnit), autoValue(autoValue) {}
 	std::pair<float, Unit> value;
+	bool autoValue;
 };
 
 struct Color
@@ -33,10 +35,7 @@ struct Color
 };
 
 
-
 using Value = std::variant<Keyword, Length, Color>;
-
-
 
 enum class kValueType
 {
@@ -51,8 +50,17 @@ enum class kProperty
 	FontWeight,
 	Color,
 	Display,
+	Width,
+	Margin,
+	MarginLeft,
+	MarginRight,
+	BorderWidth,
+	BorderLeftWidth,
+	BorderRightWidth,
+	Padding,
+	PaddingLeft,
+	PaddingRight,
 };
-
 
 struct Declaration
 {

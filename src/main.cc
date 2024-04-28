@@ -4,11 +4,14 @@
 
 #include "css_parser.h"
 #include "html_parser.h"
+#include "layout_builder.h"
 #include "style_tree_maker.h"
 #include "utils.h"
 
 constexpr const char* kTestHtmlFileName = "src/test.html";
 constexpr const char* kTestCssFileName = "src/test.css";
+
+
 
 std::string readFileIntoString(const std::string& path) 
 {
@@ -42,7 +45,15 @@ int main()
     CSSParser cssParser = parseCssFile(kTestCssFileName);
 
     StyleTreeMaker styleTreeMaker;
-    styleTreeMaker.createStyleTree(htmlParser.DomTree(), cssParser.stylesheet());
+    StyleNode styleRootNode = styleTreeMaker.createStyleTree(htmlParser.DomTree(), cssParser.stylesheet());
+
+    LayoutBox * layoutRootBox = buildLayoutTree(&styleRootNode);
+
+
+    Dimensions containingBlock;
+
+    containingBlock.content = { 0, 0, 1823, 1186 };
+    layoutRootBox->layout(containingBlock);
 
     return 0;
 }

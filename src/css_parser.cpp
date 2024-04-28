@@ -8,9 +8,24 @@
 
 // TODO: Integrate with CssProperties & CssPropertyValues
 std::unordered_map<std::string, std::pair<kProperty, kValueType>> propertyPool{
-		{"font-weight", std::make_pair(kProperty::FontWeight,kValueType::Length)},
-		{"color",  std::make_pair(kProperty::Color,kValueType::Color)},
-		{"display",  std::make_pair(kProperty::Display, kValueType::Keyword)},
+		{"width",				std::make_pair(kProperty::Width,			kValueType::Length)},
+
+		{"margin",				std::make_pair(kProperty::Margin,			kValueType::Length)},
+		{"margin-left",			std::make_pair(kProperty::MarginLeft,		kValueType::Length)},
+		{"margin-right",		std::make_pair(kProperty::MarginRight,		kValueType::Length)},
+		
+		{"border-witdh",		std::make_pair(kProperty::BorderWidth,		kValueType::Length)},
+		{"border-left-witdh",	std::make_pair(kProperty::BorderLeftWidth,	kValueType::Length)},
+		{"border-right-witdh",	std::make_pair(kProperty::BorderRightWidth, kValueType::Length)},
+		
+		{"padding",				std::make_pair(kProperty::MarginRight,		kValueType::Length)},
+		{"padding-left",		std::make_pair(kProperty::MarginRight,		kValueType::Length)},
+		{"padding-right",		std::make_pair(kProperty::MarginRight,		kValueType::Length)},
+		
+		{"font-weight",			std::make_pair(kProperty::FontWeight,		kValueType::Length)},
+
+		{"color",				std::make_pair(kProperty::Color,			kValueType::Color)},
+		{"display",				std::make_pair(kProperty::Display,			kValueType::Keyword)},
 
 };
 
@@ -123,26 +138,26 @@ Value CSSParser::parseValue(const std::string& property)
 		consumeCharacter();
 	}
 
-	Value value;
 	switch (valueType)
 	{
 	case kValueType::Keyword:
 		break;
 	case kValueType::Length: {
-		float floatValue = std::stof(valueString);
-		value = Length(std::make_pair(floatValue, Unit::Px));
+		if (valueString == "auto")
+		{
+			return Length(std::stof(valueString), Unit::Px, true);
+		}
+		return Length(std::stof(valueString), Unit::Px);
 		break;
 	}
 	case kValueType::Color: {
 		// TODO : exception
-		value = colorToRGB[valueString];
+		return colorToRGB[valueString];
 		break;
 	}
 	default:
-		break;
+		exit(0);
 	}
-
-	return value;
 }
 
 std::string CSSParser::parseProperty()

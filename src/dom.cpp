@@ -29,6 +29,11 @@ ElementType DomNode::type() const
 	return type_;
 }
 
+bool DomNode::isTextNode() const
+{
+	return false;
+}
+
 const std::string& Element::Id() const
 {
 	static std::string emptyString = "";
